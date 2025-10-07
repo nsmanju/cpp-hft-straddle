@@ -1,0 +1,88 @@
+{
+    "system": {
+        "name": "HFT Straddle Trading System",
+        "version": "1.0.0",
+        "description": "Professional options straddle trading system for tech stocks"
+    },
+    "trading": {
+        "initial_capital": 100000.0,
+        "paper_trading_mode": true,
+        "max_positions": 5,
+        "position_size_percent": 2.0,
+        "enable_real_time_trading": false
+    },
+    "strategy": {
+        "profit_target_percent": 15.0,
+        "stop_loss_percent": 25.0,
+        "max_hold_days": 30,
+        "otm_offset_percent": 2.0,
+        "max_premium_percent": 5.0,
+        "min_time_to_expiry_days": 7,
+        "max_time_to_expiry_days": 60
+    },
+    "risk_management": {
+        "max_daily_loss_percent": 2.0,
+        "max_portfolio_risk_percent": 10.0,
+        "max_sector_exposure_percent": 30.0,
+        "max_correlation": 0.70,
+        "enable_risk_alerts": true
+    },
+    "data_feeds": {
+        "primary_feed": "simulation",
+        "iex_cloud": {
+            "enabled": false,
+            "api_token": "your_iex_token_here",
+            "base_url": "https://cloud.iexapis.com/stable"
+        },
+        "alpha_vantage": {
+            "enabled": false,
+            "api_key": "your_alpha_vantage_key_here"
+        },
+        "simulation": {
+            "enabled": true,
+            "data_directory": "./data",
+            "start_date": "2022-01-01",
+            "end_date": "2022-12-31"
+        }
+    },
+    "stock_selection": {
+        "target_symbols": [
+            "AAPL", "GOOGL", "MSFT", "AMZN", "TSLA",
+            "NVDA", "META", "NFLX", "CRM", "ADBE"
+        ],
+        "min_market_cap": 50000000000,
+        "min_daily_volume": 10000000,
+        "min_options_volume": 10000,
+        "max_bid_ask_spread_percent": 2.0,
+        "selection_frequency_minutes": 5
+    },
+    "performance": {
+        "enable_real_time_plotting": true,
+        "update_frequency_seconds": 30,
+        "enable_detailed_logging": true,
+        "log_directory": "./logs",
+        "performance_metrics": [
+            "total_pnl",
+            "win_rate", 
+            "sharpe_ratio",
+            "max_drawdown",
+            "active_positions"
+        ]
+    },
+    "system_optimization": {
+        "enable_numa": true,
+        "enable_simd": true,
+        "enable_hugepages": false,
+        "worker_threads": 4,
+        "buffer_size": 1048576,
+        "cache_line_size": 64
+    },
+    "logging": {
+        "log_level": "INFO",
+        "console_output": true,
+        "file_output": true,
+        "trade_log": true,
+        "performance_log": true,
+        "system_log": true
+    }
+}
