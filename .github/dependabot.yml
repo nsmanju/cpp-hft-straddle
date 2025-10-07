@@ -1,0 +1,36 @@
+# GitHub Dependabot configuration for automated dependency updates
+# This ensures your dependencies stay up-to-date automatically
+
+version: 2
+updates:
+  # Monitor GitHub Actions for updates
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "06:00"
+    open-pull-requests-limit: 5
+    labels:
+      - "dependencies"
+      - "github-actions"
+    commit-message:
+      prefix: "ci"
+      prefix-development: "ci"
+      include: "scope"
+
+  # Monitor CMake dependencies if using FetchContent or similar
+  - package-ecosystem: "cmake"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"  
+      time: "06:00"
+    open-pull-requests-limit: 3
+    labels:
+      - "dependencies"
+      - "cmake"
+    commit-message:
+      prefix: "deps"
+      prefix-development: "deps"
+      include: "scope"

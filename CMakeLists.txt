@@ -28,6 +28,30 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
+# ===================================================================
+#                         CI/CD CONFIGURATION
+# ===================================================================
+
+# Options for CI/CD and testing
+option(ENABLE_TESTING "Enable unit testing with GoogleTest" OFF)
+option(ENABLE_BENCHMARKS "Enable performance benchmarks" OFF)
+option(ENABLE_COVERAGE "Enable code coverage reporting" OFF)
+option(BUILD_SHARED_LIBS "Build shared libraries" OFF)
+
+# Enable testing if requested
+if(ENABLE_TESTING)
+    enable_testing()
+    include(CTest)
+endif()
+
+# Coverage configuration
+if(ENABLE_COVERAGE AND CMAKE_BUILD_TYPE STREQUAL "Debug")
+    if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} --coverage")
+        set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} --coverage")
+    endif()
+endif()
+
 # Compiler-specific optimizations
 if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
     # High-performance compilation flags
@@ -211,6 +235,91 @@ set(CPACK_RPM_PACKAGE_REQUIRES "glibc, libstdc++, libcurl")
 include(CPack)
 
 # Custom targets for development
+
+# ===================================================================
+#                    TESTING AND CI/CD TARGETS
+# ===================================================================
+
+# Add GoogleTest for unit testing
+if(ENABLE_TESTING)
+    find_package(GTest QUIET)
+    if(NOT GTest_FOUND)
+        # Download and build GoogleTest
+        include(FetchContent)
+        FetchContent_Declare(
+            googletest
+            GIT_REPOSITORY https://github.com/google/googletest.git
+            GIT_TAG        release-1.12.1
+        )
+        FetchContent_MakeAvailable(googletest)
+    endif()
+    
+    # Create test executable
+    add_executable(test_hft_straddle
+        tests/test_market_data.cpp
+        tests/test_strategy.cpp
+        tests/test_data_ingestion.cpp
+    )
+    
+    target_link_libraries(test_hft_straddle
+        gtest
+        gtest_main
+        ${CMAKE_THREAD_LIBS_INIT}
+    )
+    
+    # Add test to CTest
+    add_test(NAME HFTStraddleTests COMMAND test_hft_straddle)
+    
+    # Set test properties
+    set_tests_properties(HFTStraddleTests PROPERTIES
+        TIMEOUT 60
+        LABELS "unit"
+    )
+endif()
+
+# Add Google Benchmark for performance testing
+if(ENABLE_BENCHMARKS)
+    find_package(benchmark QUIET)
+    if(NOT benchmark_FOUND)
+        # Download and build Google Benchmark
+        include(FetchContent)
+        FetchContent_Declare(
+            benchmark
+            GIT_REPOSITORY https://github.com/google/benchmark.git
+            GIT_TAG        v1.8.3
+        )
+        FetchContent_MakeAvailable(benchmark)
+    endif()
+    
+    # Create benchmark executable
+    add_executable(benchmark_hft_straddle
+        benchmarks/bench_market_data.cpp
+        benchmarks/bench_strategy.cpp
+        benchmarks/bench_latency.cpp
+    )
+    
+    target_link_libraries(benchmark_hft_straddle
+        benchmark::benchmark
+        ${CMAKE_THREAD_LIBS_INIT}
+    )
+endif()
+
+# Coverage reporting target
+if(ENABLE_COVERAGE)
+    find_program(LCOV_PATH lcov)
+    find_program(GENHTML_PATH genhtml)
+    
+    if(LCOV_PATH AND GENHTML_PATH)
+        add_custom_target(coverage
+            COMMAND ${LCOV_PATH} --directory . --capture --output-file coverage.info
+            COMMAND ${LCOV_PATH} --remove coverage.info '/usr/*' --output-file coverage.info
+            COMMAND ${LCOV_PATH} --list coverage.info
+            COMMAND ${GENHTML_PATH} coverage.info --output-directory coverage_html
+            WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+            COMMENT "Generating code coverage report"
+        )
+    endif()
+endif()
 
 # Performance profiling target
 add_custom_target(profile
